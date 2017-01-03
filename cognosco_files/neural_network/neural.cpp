@@ -24,28 +24,20 @@ void cognosco::neural::NeuralNetwork::CreateNeuralNetwork(
   logloc = pessum::logging::AddLogLocation(
       "cognosco_files/neural_network/neural/[" + name + "]/");
   for (int i = 0; i < neurons.size(); i++) {
-    std::vector<Neuron> layer;
-    std::vector<std::vector<double>> weightlayer;
-    std::vector<double> biaslayer;
     std::vector<double> activationlayer;
+    std::vector<std::vector<double>> weightlayer;
     for (int j = 0; j < neurons[i]; j++) {
-      Neuron newneuron;
-      newneuron.bias = drand();
-      newneuron.value = 0;
+      std::vector<double> weightneuron;
       if (i > 0) {
         for (int k = 0; k < neurons[i - 1]; k++) {
-          newneuron.weights.push_back(drand());
+          weightneuron.push_back(drand() + drand() - 1);
         }
       }
-      weightlayer.push_back(newneuron.weights);
-      biaslayer.push_back(newneuron.bias);
+      weightlayer.push_back(weightneuron);
       activationlayer.push_back(0);
-      layer.push_back(newneuron);
     }
-    network.push_back(layer);
-    weightnetwork.push_back(weightlayer);
-    biasnetwork.push_back(biaslayer);
-    activationnetwork.push_back(activationlayer);
+    activations.push_back(activationlayer);
+    weights.push_back(weightlayer);
   }
   pessum::logging::LogLoc(pessum::logging::LOG_SUCCESS,
                           "Created neural network \"" + name + "\"", logloc,
@@ -54,6 +46,19 @@ void cognosco::neural::NeuralNetwork::CreateNeuralNetwork(
 
 void cognosco::neural::NeuralNetwork::StandardGradientDecent(
     std::vector<Item> inputdata, int epochs, int batchsize) {
+  std::string line = "";
+  for (int i = 0; i < weights.size(); i++) {
+    line += "[";
+    for (int j = 0; j < weights[i].size(); j++) {
+      line += "[";
+      for (int k = 0; k < weights[i][j].size(); k++) {
+        line += pessum::math::ReduceDouble(weights[i][j][k]) + " ";
+      }
+      line += "]";
+    }
+    line += "]";
+  }
+  pessum::logging::Log(pessum::logging::LOG_INFORMATION, line);
   for (int i = 0; i < epochs; i++) {
     std::random_shuffle(inputdata.begin(), inputdata.end());
     std::vector<std::vector<Item>> batches;
@@ -66,16 +71,38 @@ void cognosco::neural::NeuralNetwork::StandardGradientDecent(
       }
     }
     for (int j = 0; j < batches.size(); j++) {
-      UpdateBatch(batches[j]);
+      for (int k = 0; k < batches[j].size(); k++) {
+        ForwardPropogation(batches[j][k].inputdata);
+        BackwardPropogation(batches[j][k].inputdata,
+                            batches[j][k].expectedresult);
+      }
     }
+    double percentage = Evaluate(inputdata);
+    // pessum::logging::Log(pessum::logging::LOG_DATA,
+    //                     std::to_string(percentage) + "\% accuracy");
   }
+
+  line = "";
+  for (int i = 0; i < weights.size(); i++) {
+    line += "[";
+    for (int j = 0; j < weights[i].size(); j++) {
+      line += "[";
+      for (int k = 0; k < weights[i][j].size(); k++) {
+        line += pessum::math::ReduceDouble(weights[i][j][k]) + " ";
+      }
+      line += "]";
+    }
+    line += "]";
+  }
+  pessum::logging::Log(pessum::logging::LOG_INFORMATION, line);
 }
 
 double cognosco::neural::NeuralNetwork::Evaluate(
     std::vector<Item> evaluationdata) {
   double sum = 0;
   for (int i = 0; i < evaluationdata.size(); i++) {
-    std::vector<double> output = FeedForward(evaluationdata[i].inputdata);
+    std::vector<double> output =
+        ForwardPropogation(evaluationdata[i].inputdata);
     int goalindex = 0, recevedindex = 0;
     for (int j = 0; j < evaluationdata[i].expectedresult.size(); j++) {
       if (evaluationdata[i].expectedresult[j] >=
@@ -90,7 +117,7 @@ double cognosco::neural::NeuralNetwork::Evaluate(
       sum++;
     }
   }
-  sum /= evaluationdata.size();
+  sum /= (double)evaluationdata.size();
   return (sum);
 }
 
@@ -98,31 +125,87 @@ void cognosco::neural::NeuralNetwork::SetLearingRate(double rate) {
   learningrate = rate;
 }
 
-std::vector<double> cognosco::neural::NeuralNetwork::FeedForward(
+std::vector<double> cognosco::neural::NeuralNetwork::ForwardPropogation(
     std::vector<double> inputdata) {
-  activationnetwork[0] = inputdata;
-  for (int i = 1; i < network.size(); i++) {
-    std::vector<std::vector<double>> activationmatrix;
-    std::vector<std::vector<double>> biasmatrix;
-    std::vector<std::vector<double>> weightmatrix = weightnetwork[i];
-    activationmatrix.push_back(activationnetwork[i - 1]);
-    biasmatrix.push_back(biasnetwork[i]);
-    activationmatrix = pessum::math::SumMatrix(
-        pessum::math::DotMatrix(
-            pessum::math::ProductMatrix(weightmatrix, activationmatrix)),
-        biasmatrix);
-    activationnetwork[i] = activationmatrix[0];
-    activationnetwork[i] = VectorSigmoid(activationnetwork[i]);
+  if (inputdata.size() != activations[0].size()) {
+    pessum::logging::LogLoc(
+        pessum::logging::LOG_WARNING,
+        "Input data size must match size of first layer of neurons", logloc,
+        "ForwardPropogation");
+    return (inputdata);
   }
-  return (activationnetwork[activationnetwork.size() - 1]);
+  activations[0] = inputdata;
+  for (int i = 1; i < activations.size(); i++) {
+    std::vector<std::vector<double>> activationmatrix;
+    activationmatrix.push_back(activations[i - 1]);
+    activationmatrix = Sigmoid(pessum::math::DotMatrix(
+        pessum::math::ProductMatrix(activationmatrix, weights[i])));
+    activations[i] = activationmatrix[0];
+  }
+  return (activations[activations.size() - 1]);
+}
+
+void cognosco::neural::NeuralNetwork::BackwardPropogation(
+    std::vector<double> inputdata, std::vector<double> expectedouput) {
+  std::vector<double> outputerror =
+      pessum::math::Diff(expectedouput, activations[activations.size() - 1]);
+  std::vector<double> deltaweightsum = pessum::math::Product(
+      SigmoidPrime(pessum::math::DotMatrix(weights[weights.size() - 1])[0]),
+      outputerror);
+  std::vector<std::vector<double>> activationmatrix;
+  for (int i = 0; i < deltaweightsum.size(); i++) {
+    activationmatrix.push_back(activations[activations.size() - 2]);
+  }
+  std::vector<std::vector<double>> deltaweights = pessum::math::DivMatrix(
+      pessum::math::TransposeMatrix({deltaweightsum}), activationmatrix);
+  deltaweights = pessum::math::ScalarMultiplyMatrix(learningrate, deltaweights);
+  weights[weights.size() - 1] =
+      pessum::math::SumMatrix(deltaweights, weights[weights.size() - 1]);
+  std::vector<std::vector<double>> deltahiddensum =
+      pessum::math::TransposeMatrix({deltaweightsum});
+  for (int i = activations.size() - 2; i > 0; i--) {
+    std::vector<double> hiddensum = pessum::math::DotMatrix(weights[i])[0];
+    deltahiddensum = pessum::math::ProductMatrix(
+        pessum::math::DivMatrix(deltahiddensum, weights[i + 1]),
+        {SigmoidPrime(hiddensum)});
+    activationmatrix.clear();
+    activationmatrix = {activations[i - 1]};
+    deltaweights.clear();
+    for (int j = 0; j < deltahiddensum.size(); j++) {
+      for (int k = 0; k < deltahiddensum[j].size(); k++) {
+        std::vector<double> col;
+        for (int l = 0; l < activationmatrix[0].size(); l++) {
+          if (j == 0) {
+            col.push_back(deltahiddensum[j][k] / activationmatrix[0][l]);
+          } else {
+            deltaweights[j][k] +=
+                (deltahiddensum[j][k] / activationmatrix[0][l]);
+          }
+        }
+        if (j == 0) {
+          deltaweights.push_back(col);
+        }
+      }
+    }
+    deltaweights =
+        pessum::math::ScalarMultiplyMatrix(learningrate, deltaweights);
+    weights[i] = pessum::math::SumMatrix(deltaweights, weights[i]);
+  }
 }
 
 double cognosco::neural::NeuralNetwork::Sigmoid(double z) {
   return (1.0 / (1.0 + (pow(E, -z))));
 }
 
-std::vector<double> cognosco::neural::NeuralNetwork::VectorSigmoid(
+std::vector<double> cognosco::neural::NeuralNetwork::Sigmoid(
     std::vector<double> z) {
+  for (int i = 0; i < z.size(); i++) {
+    z[i] = Sigmoid(z[i]);
+  }
+  return (z);
+}
+std::vector<std::vector<double>> cognosco::neural::NeuralNetwork::Sigmoid(
+    std::vector<std::vector<double>> z) {
   for (int i = 0; i < z.size(); i++) {
     z[i] = Sigmoid(z[i]);
   }
@@ -130,111 +213,13 @@ std::vector<double> cognosco::neural::NeuralNetwork::VectorSigmoid(
 }
 
 double cognosco::neural::NeuralNetwork::SigmoidPrime(double z) {
-  return (Sigmoid(z) * (1 - Sigmoid(z)));
+  return (pow(E, z) / (pow(1 + pow(E, z), 2)));
 }
 
-std::vector<double> cognosco::neural::NeuralNetwork::VectorSigmoidPrime(
+std::vector<double> cognosco::neural::NeuralNetwork::SigmoidPrime(
     std::vector<double> z) {
   for (int i = 0; i < z.size(); i++) {
     z[i] = SigmoidPrime(z[i]);
   }
   return (z);
-}
-
-void cognosco::neural::NeuralNetwork::UpdateBatch(std::vector<Item> batch) {
-  std::vector<std::vector<double>> nablab, deltanablab;
-  std::vector<std::vector<std::vector<double>>> nablaw, deltanablaw;
-  for (int i = 0; i < biasnetwork.size(); i++) {
-    std::vector<double> nablabcol;
-    std::vector<std::vector<double>> nablawcol;
-    for (int j = 0; j < biasnetwork[j].size(); j++) {
-      nablabcol.push_back(0);
-      std::vector<double> nablawneuron;
-      for (int k = 0; k < weightnetwork.size(); k++) {
-        nablawneuron.push_back(0);
-      }
-      nablawcol.push_back(nablawneuron);
-    }
-    nablab.push_back(nablabcol);
-    nablaw.push_back(nablawcol);
-  }
-  for (int i = 0; i < batch.size(); i++) {
-    deltanablab.clear();
-    deltanablaw.clear();
-    BackProp(batch[i], deltanablab, deltanablaw);
-    for (int layer = 0; layer < nablab.size(); layer++) {
-      nablab[layer] = pessum::math::Sum(nablab[layer], deltanablab[layer]);
-      for (int neuron = 0; neuron < nablaw[layer].size(); neuron++) {
-        nablaw[layer][neuron] = pessum::math::Sum(nablaw[layer][neuron],
-                                                  deltanablaw[layer][neuron]);
-      }
-    }
-  }
-  double multi = learningrate / (double)batch.size();
-  for (int layer = 0; layer < biasnetwork.size(); layer++) {
-    biasnetwork[layer] = pessum::math::Diff(
-        biasnetwork[layer], pessum::math::ScalerMultiply(multi, nablab[layer]));
-    for (int neuron = 0; neuron < weightnetwork[layer].size(); neuron++) {
-      weightnetwork[layer][neuron] = pessum::math::Diff(
-          weightnetwork[layer][neuron],
-          pessum::math::ScalerMultiply(multi, nablaw[layer][neuron]));
-    }
-  }
-}
-
-void cognosco::neural::NeuralNetwork::BackProp(
-    Item item, std::vector<std::vector<double>>& deltanablab,
-    std::vector<std::vector<std::vector<double>>>& deltanablaw) {
-  for (int i = 0; i < biasnetwork.size(); i++) {
-    std::vector<double> nablabcol;
-    std::vector<std::vector<double>> nablawcol;
-    for (int j = 0; j < biasnetwork[j].size(); j++) {
-      nablabcol.push_back(0);
-      std::vector<double> nablawneuron;
-      for (int k = 0; k < weightnetwork.size(); k++) {
-        nablawneuron.push_back(0);
-      }
-      nablawcol.push_back(nablawneuron);
-    }
-    deltanablab.push_back(nablabcol);
-    deltanablaw.push_back(nablawcol);
-  }
-  std::vector<std::vector<std::vector<double>>> activations, zs;
-  std::vector<std::vector<double>> activation, z;
-  activation.push_back(item.inputdata);
-  activation = pessum::math::TransposeMatrix(activation);
-  activations.push_back(activation);
-  for (int layer = 1; layer < network.size(); layer++) {
-    std::vector<std::vector<double>> b;
-    b.push_back(biasnetwork[layer]);
-    std::vector<std::vector<double>> w = weightnetwork[layer];
-    if (activations.size() == 1) {
-      z = pessum::math::ProductMatrix(w, activation);
-      z = pessum::math::TransposeMatrix(z);
-      z = pessum::math::DotMatrix(z);
-      while (z.size() < b[0].size()) {
-        z.push_back(z[0]);
-      }
-      z = pessum::math::TransposeMatrix(z);
-    } else {
-      z = pessum::math::MatrixMultiply(w, activation);
-    }
-    z = pessum::math::SumMatrix(z, b);
-    zs.push_back(z);
-    activation.clear();
-    for (int i = 0; i < z.size(); i++) {
-      activation.push_back(VectorSigmoid(z[i]));
-    }
-    activations.push_back(activation);
-  }
-  std::vector<std::vector<double>> y, sigprime;
-  for (int i = 0; i < zs[zs.size() - 1].size(); i++) {
-    sigprime.push_back(VectorSigmoidPrime(zs[zs.size() - 1][i]));
-  }
-  y.push_back(item.expectedresult);
-  y = pessum::math::TransposeMatrix(y);
-  std::vector<std::vector<double>> delta =
-      pessum::math::DiffMatrix(activations[activations.size() - 1], y);
-  delta = pessum::math::ProductMatrix(delta, sigprime);
-  deltanablab[deltanablab.size() - 1] =
 }
