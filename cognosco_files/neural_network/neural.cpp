@@ -1,8 +1,8 @@
 #include <math.h>
-#include <pessum_headers.h>
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include <pessum.h>
 #include "neural.h"
 
 double E = 2.7182818284590452353602874713526624977572470936999;
@@ -41,7 +41,7 @@ void cognosco::neural::NeuralNetwork::CreateNeuralNetwork(
     weights.push_back(weightlayer);
   }
   globalepoch = 0;
-  pessum::logging::LogLoc(pessum::logging::LOG_SUCCESS,
+  pessum::logging::LogLoc(pessum::logging::SUCCESS,
                           "Created neural network \"" + name + "\"", logloc,
                           "CreateNeuralNetwork");
 }
@@ -59,15 +59,13 @@ void cognosco::neural::NeuralNetwork::StochasticGradientDescent(
         batch.clear();
       }
     }
-    pessum::logging::Log();
     for (int j = 0; j < batches.size(); j++) {
       UpdateBatch(batches[j]);
     }
-    pessum::logging::Log();
     globalepoch++;
     if (display == true) {
       double percentage = Evaluate(inputdata);
-      pessum::logging::LogLoc(pessum::logging::LOG_INFORMATION,
+      pessum::logging::LogLoc(pessum::logging::INFORMATION,
                               "Epoch: " + std::to_string(globalepoch) + "[\%" +
                                   pessum::math::ReduceDouble(percentage * 100) +
                                   "]",
@@ -77,7 +75,6 @@ void cognosco::neural::NeuralNetwork::StochasticGradientDescent(
 }
 
 void cognosco::neural::NeuralNetwork::UpdateBatch(std::vector<Item> items) {
-  pessum::logging::Log();
   std::vector<std::vector<std::vector<double>>> deltaweights, newdeltaweights;
   deltaweights = weights;
   for (int i = 0; i < deltaweights.size(); i++) {
@@ -87,23 +84,15 @@ void cognosco::neural::NeuralNetwork::UpdateBatch(std::vector<Item> items) {
       }
     }
   }
-  pessum::logging::Log();
   for (int i = 0; i < items.size(); i++) {
-    pessum::logging::Log(pessum::logging::LOG_DATA);
     ForwardPropogation(items[i].inputdata);
-    pessum::logging::Log(pessum::logging::LOG_DATA);
-    std::cout << "In:\n";
     newdeltaweights =
         BackwardPropogation(items[i].inputdata, items[i].expectedresult);
-        std::cout << "Out:\n";
-    pessum::logging::Log(pessum::logging::LOG_DATA);
     for (int j = deltaweights.size() - 1; j > 0; j--) {
       deltaweights[j] =
           pessum::math::SumMatrix(deltaweights[j], newdeltaweights[j - 1]);
     }
-    pessum::logging::Log(pessum::logging::LOG_DATA);
   }
-  pessum::logging::Log();
   for (int i = 0; i < deltaweights.size(); i++) {
     deltaweights[i] = pessum::math::ScalarMultiplyMatrix(
         (learningrate / (double)items.size()), deltaweights[i]);
@@ -118,6 +107,9 @@ double cognosco::neural::NeuralNetwork::Evaluate(
     std::vector<double> outputerror =
         pessum::math::Diff(evaluationdata[i].expectedresult,
                            ForwardPropogation(evaluationdata[i].inputdata));
+    for (int j = 0; j < outputerror.size(); j++) {
+      outputerror[j] = fabs(outputerror[j]);
+    }
     double maximum = outputerror.size();
     sum += ((maximum - pessum::math::Total(outputerror)) / maximum);
   }
@@ -133,7 +125,7 @@ std::vector<double> cognosco::neural::NeuralNetwork::ForwardPropogation(
     std::vector<double> inputdata) {
   if (inputdata.size() != activations[0].size()) {
     pessum::logging::LogLoc(
-        pessum::logging::LOG_WARNING,
+        pessum::logging::WARNING,
         "Input data size must match size of first layer of neurons", logloc,
         "ForwardPropogation");
     return (inputdata);
@@ -152,9 +144,9 @@ std::vector<double> cognosco::neural::NeuralNetwork::ForwardPropogation(
 std::vector<std::vector<std::vector<double>>>
 cognosco::neural::NeuralNetwork::BackwardPropogation(
     std::vector<double> inputdata, std::vector<double> expectedouput) {
-  pessum::logging::Log(pessum::logging::LOG_WARNING);
-  std::vector<std::vector<std::vector<double>>> output = {{{}}};
-  std::vector<double> outputerror =
+  std::vector<std::vector<std::vector<double>>> output;
+  std::vector<double> outputerror;
+  outputerror =
       pessum::math::Diff(expectedouput, activations[activations.size() - 1]);
   std::vector<double> deltaweightsum = pessum::math::Product(
       SigmoidPrime(pessum::math::DotMatrix(weights[weights.size() - 1])[0]),
@@ -168,26 +160,14 @@ cognosco::neural::NeuralNetwork::BackwardPropogation(
   output.push_back(deltaweights);
   std::vector<std::vector<double>> deltahiddensum =
       pessum::math::TransposeMatrix({deltaweightsum});
-
-  pessum::logging::Log(pessum::logging::LOG_WARNING);
   for (int i = activations.size() - 2; i > 0; i--) {
-    std::cout << i << ":\n";
-    pessum::logging::Log(pessum::logging::LOG_ERROR, std::to_string(i));
     std::vector<double> hiddensum = pessum::math::DotMatrix(weights[i])[0];
-    std::cout << "1\n";
     deltahiddensum = pessum::math::ProductMatrix(
         pessum::math::DivMatrix(deltahiddensum, weights[i + 1]),
         {SigmoidPrime(hiddensum)});
-        std::cout << "2\n";
-    pessum::logging::Log(pessum::logging::LOG_ERROR);
     activationmatrix.clear();
-    std::cout << "3\n";
     activationmatrix = {activations[i - 1]};
-    std::cout << "4\n";
     deltaweights.clear();
-    pessum::logging::Log(pessum::logging::LOG_ERROR);
-
-    std::cout << "5\n";
     for (int j = 0; j < deltahiddensum.size(); j++) {
       for (int k = 0; k < deltahiddensum[j].size(); k++) {
         std::vector<double> col;
@@ -200,9 +180,9 @@ cognosco::neural::NeuralNetwork::BackwardPropogation(
             }
           } else {
             if (activationmatrix[0][l] == 0) {
-              deltaweights[j][k] += 0;
+              deltaweights[k][l] += 0;
             } else {
-              deltaweights[j][k] +=
+              deltaweights[k][l] +=
                   (deltahiddensum[j][k] / activationmatrix[0][l]);
             }
           }
@@ -212,13 +192,8 @@ cognosco::neural::NeuralNetwork::BackwardPropogation(
         }
       }
     }
-    std::cout << "6\n";
-    pessum::logging::Log(pessum::logging::LOG_ERROR);
     output.insert(output.begin(), deltaweights);
-    std::cout << "7\n";
-    pessum::logging::Log(pessum::logging::LOG_ERROR);
   }
-  pessum::logging::Log(pessum::logging::LOG_WARNING);
   return (output);
 }
 

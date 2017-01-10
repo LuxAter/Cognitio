@@ -1,9 +1,9 @@
 CPP_FILES = $(wildcard *.cpp)
 OBJ_FILES = $(notdir $(CPP_FILES:.cpp=.o))
 TOTAL_OBJ_FILES = $(wildcard */*.o) $(wildcard */*/*.o) $(wildcard */*/*/*.o)
-CC = g++
+CC = clang++
 COMPILER_FLAGS = -MMD -std=c++11 -w -c
-LINKER_FLAGS = -laequus -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+LINKER_FLAGS = -lpessum
 PROGRAM_NAME = cognosco
 
 all: subsystem top_obj $(PROGRAM_NAME)
@@ -15,13 +15,14 @@ $(PROGRAM_NAME): $(OBJ_FILES) $(wildcard */*.o) $(wildcard */*/*.o) $(wildcard *
 	setterm -default
 
 %.o: %.cpp
-	g++ $(COMPILER_FLAGS) -o $(notdir $*).o $*.cpp
+	$(CC) $(COMPILER_FLAGS) -o $(notdir $*).o $*.cpp
 
 .PHONY : top_obj
 top_obj:$(OBJ_FILES)
 
 .PHONY : subsystem
 subsystem:
+	export CC
 	setterm --foreground cyan
 	cd cognosco_files && $(MAKE)
 
