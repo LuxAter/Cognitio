@@ -1,4 +1,8 @@
 #ifndef COGNOSCO_FILES_COGNOSCO_CORE_H_
 #define COGNOSCO_FILES_COGNOSCO_CORE_H_
-namespace cognosco {}
+#include <string>
+namespace cognosco {
+  std::string GenName();
+  double drand();
+}
 #endif

@@ -1,29 +1,25 @@
 #include <math.h>
+#include <pessum.h>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <vector>
-#include <pessum.h>
+#include "../cognosco.h"
 #include "neural.h"
 
 double E = 2.7182818284590452353602874713526624977572470936999;
 
-double drand() { return ((double)rand() / RAND_MAX); }
-
-std::string GenName() {
-  std::string name;
-  std::vector<std::string> names =
-      pessum::luxreader::LoadLuxListFile("resources/luxfiles/names.lux");
-  name = names[rand() % names.size()];
-  return (name);
-}
-
 void cognosco::neural::NeuralNetwork::CreateNeuralNetwork(
-    std::vector<int> neurons, std::string name) {
-  if (name == "NULL") {
+    std::vector<int> neurons, std::string name, int log) {
+  if (name == "") {
     name = GenName();
   }
-  logloc = pessum::logging::AddLogLocation(
-      "cognosco_files/neural_network/neural/[" + name + "]/");
+  if (log == -1) {
+    logloc = pessum::logging::AddLogLocation(
+        "cognosco_files/neural_network/neural/[" + name + "]/");
+  } else {
+    logloc = log;
+  }
   for (int i = 0; i < neurons.size(); i++) {
     std::vector<double> activationlayer;
     std::vector<std::vector<double>> weightlayer;
@@ -44,6 +40,19 @@ void cognosco::neural::NeuralNetwork::CreateNeuralNetwork(
   pessum::logging::LogLoc(pessum::logging::SUCCESS,
                           "Created neural network \"" + name + "\"", logloc,
                           "CreateNeuralNetwork");
+}
+
+void cognosco::neural::NeuralNetwork::SaveNetworkToFile(std::string file) {}
+
+void cognosco::neural::NeuralNetwork::LoadNetworkFromFile(std::string file) {
+  std::ifstream loadfile(file.c_str());
+  std::string name;
+  if (loadfile.is_open()) {
+    loadfile >> name >> learningrate >> globalepoch;
+    std::string line;
+    while (getline(loadfile, line)) {
+    }
+  }
 }
 
 void cognosco::neural::NeuralNetwork::StochasticGradientDescent(
@@ -195,6 +204,36 @@ cognosco::neural::NeuralNetwork::BackwardPropogation(
     output.insert(output.begin(), deltaweights);
   }
   return (output);
+}
+
+std::vector<double> cognosco::neural::NeuralNetwork::GetVector() {
+  std::vector<double> output;
+  for (int i = 0; i < weights.size(); i++) {
+    for (int j = 0; j < weights[i].size(); j++) {
+      for (int k = 0; k < weights[i][j].size(); k++) {
+        output.push_back(weights[i][j][k]);
+      }
+    }
+  }
+  return (output);
+}
+
+void cognosco::neural::NeuralNetwork::InterpretVector(std::vector<double> vec) {
+  int index = 0;
+  if (vec.size() != GetVector().size()) {
+    pessum::logging::LogLoc(
+        pessum::logging::WARNING,
+        "Input vector does not contain the correct number of terms", logloc,
+        "InterpretVector");
+  }
+  for (int i = 0; i < weights.size(); i++) {
+    for (int j = 0; j < weights[i].size(); j++) {
+      for (int k = 0; k < weights[i][j].size(); k++) {
+        weights[i][j][k] = vec[index];
+        index++;
+      }
+    }
+  }
 }
 
 double cognosco::neural::NeuralNetwork::Sigmoid(double z) {

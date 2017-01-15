@@ -10,7 +10,9 @@ struct Item {
 };
 class NeuralNetwork {
  public:
-  void CreateNeuralNetwork(std::vector<int> neurons, std::string name = "NULL");
+  void CreateNeuralNetwork(std::vector<int> neurons, std::string name = "", int loc = -1);
+  void SaveNetworkToFile(std::string file);
+  void LoadNetworkFromFile(std::string file);
   void StochasticGradientDescent(std::vector<Item> inputdata, int epochs,
                               int batchsize, bool display = false);
   void UpdateBatch(std::vector<Item> items);
@@ -19,8 +21,9 @@ class NeuralNetwork {
   std::vector<double> ForwardPropogation(std::vector<double> inputdata);
   std::vector<std::vector<std::vector<double>>> BackwardPropogation(
       std::vector<double> inputdata, std::vector<double> expectedoutput);
-
- private:
+  std::vector<double> GetVector();
+  void InterpretVector(std::vector<double> vec);
+private:
   std::vector<std::vector<double>> activations;
   std::vector<std::vector<std::vector<double>>> weights;
   double learningrate;
