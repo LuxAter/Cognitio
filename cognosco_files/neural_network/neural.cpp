@@ -1,16 +1,16 @@
-#include <math.h>
-#include <pessum.h>
+#include "../cognosco.h"
+#include "neural.h"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <math.h>
+#include <pessum.h>
 #include <vector>
-#include "../cognosco.h"
-#include "neural.h"
 
 double E = 2.7182818284590452353602874713526624977572470936999;
 
 void cognosco::neural::NeuralNetwork::CreateNeuralNetwork(
-    std::vector<int> neurons, std::string name, int log) {
+    std::vector<int> neurons, std::string name, int log, bool logout) {
   if (name == "") {
     name = GenName();
   }
@@ -37,9 +37,11 @@ void cognosco::neural::NeuralNetwork::CreateNeuralNetwork(
     weights.push_back(weightlayer);
   }
   globalepoch = 0;
-  pessum::logging::LogLoc(pessum::logging::SUCCESS,
-                          "Created neural network \"" + name + "\"", logloc,
-                          "CreateNeuralNetwork");
+  if (logout == true) {
+    pessum::logging::LogLoc(pessum::logging::SUCCESS,
+                            "Created neural network \"" + name + "\"", logloc,
+                            "CreateNeuralNetwork");
+  }
 }
 
 void cognosco::neural::NeuralNetwork::SaveNetworkToFile(std::string file) {}
@@ -109,8 +111,8 @@ void cognosco::neural::NeuralNetwork::UpdateBatch(std::vector<Item> items) {
   }
 }
 
-double cognosco::neural::NeuralNetwork::Evaluate(
-    std::vector<Item> evaluationdata) {
+double
+cognosco::neural::NeuralNetwork::Evaluate(std::vector<Item> evaluationdata) {
   double sum = 0;
   for (int i = 0; i < evaluationdata.size(); i++) {
     std::vector<double> outputerror =
@@ -240,15 +242,15 @@ double cognosco::neural::NeuralNetwork::Sigmoid(double z) {
   return (1.0 / (1.0 + (pow(E, -z))));
 }
 
-std::vector<double> cognosco::neural::NeuralNetwork::Sigmoid(
-    std::vector<double> z) {
+std::vector<double>
+cognosco::neural::NeuralNetwork::Sigmoid(std::vector<double> z) {
   for (int i = 0; i < z.size(); i++) {
     z[i] = Sigmoid(z[i]);
   }
   return (z);
 }
-std::vector<std::vector<double>> cognosco::neural::NeuralNetwork::Sigmoid(
-    std::vector<std::vector<double>> z) {
+std::vector<std::vector<double>>
+cognosco::neural::NeuralNetwork::Sigmoid(std::vector<std::vector<double>> z) {
   for (int i = 0; i < z.size(); i++) {
     z[i] = Sigmoid(z[i]);
   }
@@ -259,8 +261,8 @@ double cognosco::neural::NeuralNetwork::SigmoidPrime(double z) {
   return (pow(E, z) / (pow(1 + pow(E, z), 2)));
 }
 
-std::vector<double> cognosco::neural::NeuralNetwork::SigmoidPrime(
-    std::vector<double> z) {
+std::vector<double>
+cognosco::neural::NeuralNetwork::SigmoidPrime(std::vector<double> z) {
   for (int i = 0; i < z.size(); i++) {
     z[i] = SigmoidPrime(z[i]);
   }

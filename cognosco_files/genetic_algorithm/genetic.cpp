@@ -1,28 +1,30 @@
-#include "genetic.h"
-#include <pessum.h>
 #include "../cognosco.h"
 #include "../neural_network/neural.h"
-#include <vector>
+#include "genetic.h"
 #include <algorithm>
 #include <cmath>
+#include <pessum.h>
+#include <vector>
 
-
-void cognosco::genetic::GeneticAlgorithm::CreateGeneticAlgorithm(std::vector<int> neurons, int population, double mutation, std::string name){
+void cognosco::genetic::GeneticAlgorithm::CreateGeneticAlgorithm(
+    std::vector<int> neurons, int population, double mutation,
+    std::string name) {
   neuralpattern = neurons;
   populationsize = population;
   mutationrate = mutation;
-  if(name == ""){
+  if (name == "") {
     name = GenName();
   }
-  logloc = pessum::logging::AddLogLocation("cognosco_files/genetic_algorithm/genetic/[" + name + "]");
+  logloc = pessum::logging::AddLogLocation(
+      "cognosco_files/genetic_algorithm/genetic/[" + name + "]");
   GenoratePopulation();
   pessum::logging::LogLoc(pessum::logging::SUCCESS,
                           "Created genetic algorithm \"" + name + "\"", logloc,
                           "CreateGeneticAlgorithm");
 }
 
-void cognosco::genetic::GeneticAlgorithm::RunGeneticAlgorithm(int genorations){
-  for(int i = 0; i < genorations; i++){
+void cognosco::genetic::GeneticAlgorithm::RunGeneticAlgorithm(int genorations) {
+  for (int i = 0; i < genorations; i++) {
     CalculateFitness();
     SumFitness();
     Sort();
@@ -30,44 +32,50 @@ void cognosco::genetic::GeneticAlgorithm::RunGeneticAlgorithm(int genorations){
     Killoff();
     Reproduce();
     Mutate();
+    pessum::logging::Log(pessum::logging::DATA, std::to_string(genorations));
+    pessum::logging::Log(pessum::logging::DATA,
+                         "Best Accuracy:" +
+                             std::to_string(population[0].fitness));
   }
   pessum::logging::Log(pessum::logging::DATA, std::to_string(genorations));
-  pessum::logging::Log(pessum::logging::DATA, "Best Accuracy:" + std::to_string(population[0].fitness));
+  pessum::logging::Log(pessum::logging::DATA,
+                       "Best Accuracy:" +
+                           std::to_string(population[0].fitness));
   globalgenorations += genorations;
 }
 
-void cognosco::genetic::GeneticAlgorithm::SetFitnessFunction(double (*Fitness)(neural::NeuralNetwork)){
+void cognosco::genetic::GeneticAlgorithm::SetFitnessFunction(
+    double (*Fitness)(neural::NeuralNetwork)) {
   FitnessFunction = Fitness;
 }
 
-void cognosco::genetic::GeneticAlgorithm::GenoratePopulation(){
-  for(int i = 0; i < populationsize; i++){
+void cognosco::genetic::GeneticAlgorithm::GenoratePopulation() {
+  for (int i = 0; i < populationsize; i++) {
     Individual newind;
-    newind.network.CreateNeuralNetwork(neuralpattern, "", logloc);
+    newind.network.CreateNeuralNetwork(neuralpattern, "", logloc, false);
     newind.fitness = 0;
     population.push_back(newind);
   }
 }
 
-
-void cognosco::genetic::GeneticAlgorithm::CalculateFitness(){
-  for(int i = 0; i < populationsize; i++){
+void cognosco::genetic::GeneticAlgorithm::CalculateFitness() {
+  for (int i = 0; i < populationsize; i++) {
     population[i].fitness = FitnessFunction(population[i].network);
   }
 }
 
-void cognosco::genetic::GeneticAlgorithm::SumFitness(){
+void cognosco::genetic::GeneticAlgorithm::SumFitness() {
   totalfitness = 0;
-  for(int i = 0; i < populationsize; i++){
+  for (int i = 0; i < populationsize; i++) {
     totalfitness += population[i].fitness;
   }
 }
 
-void cognosco::genetic::GeneticAlgorithm::Sort(){
-    std::sort(population.begin(), population.end(), SortCheck);
+void cognosco::genetic::GeneticAlgorithm::Sort() {
+  std::sort(population.begin(), population.end(), SortCheck);
 }
 
-void cognosco::genetic::GeneticAlgorithm::CumulateFitness(){
+void cognosco::genetic::GeneticAlgorithm::CumulateFitness() {
   double fitness = 0;
   for (int i = populationsize - 1; i >= 0; i--) {
     fitness += population[i].fitness;
@@ -81,15 +89,15 @@ void cognosco::genetic::GeneticAlgorithm::CumulateFitness(){
   totalbottemup = fitness;
 }
 
-void cognosco::genetic::GeneticAlgorithm::Killoff(){
+void cognosco::genetic::GeneticAlgorithm::Killoff() {
   while (population.size() > ceil(populationsize / (double)2)) {
     int index = SelectLow();
-    //population[index].network.TerminateNeural
+    // population[index].network.TerminateNeural
     population.erase(population.begin() + index);
   }
 }
 
-void cognosco::genetic::GeneticAlgorithm::Reproduce(){
+void cognosco::genetic::GeneticAlgorithm::Reproduce() {
   std::vector<Individual> newpop;
   std::vector<Individual> parents = population;
   while (newpop.size() + parents.size() < populationsize) {
@@ -103,14 +111,14 @@ void cognosco::genetic::GeneticAlgorithm::Reproduce(){
         parenttwo = 0;
       }
     }
-    newind.network.CreateNeuralNetwork(neuralpattern, "", logloc);
+    newind.network.CreateNeuralNetwork(neuralpattern, "", logloc, false);
     newind.fitness = 0;
     std::vector<double> weightvector, aweights, bweights;
-    aweights =population[parentone].network.GetVector();
+    aweights = population[parentone].network.GetVector();
     weightvector = aweights;
-    bweights =population[parenttwo].network.GetVector();
-    for(int i = 0;i < aweights.size();i++){
-      if(drand() > 0.5){
+    bweights = population[parenttwo].network.GetVector();
+    for (int i = 0; i < aweights.size(); i++) {
+      if (drand() > 0.5) {
         weightvector[i] = bweights[i];
       }
     }
@@ -123,11 +131,11 @@ void cognosco::genetic::GeneticAlgorithm::Reproduce(){
   population.insert(population.end(), newpop.begin(), newpop.end());
 }
 
-void cognosco::genetic::GeneticAlgorithm::Mutate(){
+void cognosco::genetic::GeneticAlgorithm::Mutate() {
   for (int i = ceil(populationsize / (double)2); i < population.size(); i++) {
     std::vector<double> weightvector = population[i].network.GetVector();
-    for(int j = 0; j < weightvector.size();j++){
-      if(drand() <= mutationrate){
+    for (int j = 0; j < weightvector.size(); j++) {
+      if (drand() <= mutationrate) {
         weightvector[j] = drand();
       }
     }
@@ -155,7 +163,6 @@ int cognosco::genetic::GeneticAlgorithm::SelectLow() {
   return (0);
 }
 
-
-bool cognosco::genetic::SortCheck(const Individual a, const Individual b){
-  return(a.fitness > b.fitness);
+bool cognosco::genetic::SortCheck(const Individual a, const Individual b) {
+  return (a.fitness > b.fitness);
 }
