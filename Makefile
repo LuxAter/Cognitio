@@ -3,7 +3,7 @@ export FLAGS = -MMD -std=c++11 -w -c
 CPP_FILES = $(wildcard *.cpp)
 TOP_DIR = $(notdir $(CPP_FILES:.cpp=.o))
 OBJ_FILES := $(shell find -name '*.o')
-LINK = -lpessum
+LINK =
 NAME = cognosco
 
 all: $(TOP_DIR) subsystem $(NAME)

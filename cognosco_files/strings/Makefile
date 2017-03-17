@@ -8,11 +8,3 @@ all: $(OBJ_FILES) subsystem
 
 .PHONY : subsystem
 subsystem:
-	@setterm -fore blue
-	@printf "matrix\n"
-	@setterm -fore white
-	@cd matrix && $(MAKE)
-	@setterm -fore green
-	@printf "strings\n"
-	@setterm -fore white
-	@cd strings && $(MAKE)
