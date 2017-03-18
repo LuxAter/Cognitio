@@ -110,5 +110,21 @@ namespace cognosco {
     }
     return (mat_inverse);
   }
+
+  template <class _T>
+  matrix<_T> dot(matrix<_T> mat_a, matrix<_T> mat_b) {
+    matrix<_T> mat_dot(mat_a.n_row, mat_b.n_col);
+    if (mat_a.n_col == mat_b.n_row) {
+      for (int i = 0; i < mat_a.n_row; i++) {
+        for (int j = 0; j < mat_b.n_col; j++) {
+          for (int k = 0; k < mat_a.n_col; k++) {
+            mat_dot.matrix_data[i][j] +=
+                mat_a.matrix_data[i][k] * mat_b.matrix_data[k][j];
+          }
+        }
+      }
+    }
+    return (mat_dot);
+  }
 }
 #endif
