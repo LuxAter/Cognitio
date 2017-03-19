@@ -1,6 +1,6 @@
 #ifndef COGNOSCO_MATRIX_HPP
 #define COGNOSCO_MATRIX_HPP
-#include <stdarg.h>
+#include <random>
 #include <string>
 #include <vector>
 #include "../strings/string.hpp"
@@ -31,6 +31,14 @@ namespace cognosco {
     }
 
     matrix(int rows, int cols, std::vector<std::vector<_TYPE>> elements) {
+      n_row = rows;
+      n_col = cols;
+      matrix_data = std::vector<std::vector<_TYPE>>(
+          rows, std::vector<_TYPE>(cols, _TYPE()));
+      setElements(elements);
+    }
+
+    matrix(int rows, int cols, std::vector<_TYPE> elements) {
       n_row = rows;
       n_col = cols;
       matrix_data = std::vector<std::vector<_TYPE>>(
@@ -88,6 +96,16 @@ namespace cognosco {
       }
     }
 
+    void fillRand(_TYPE mean, _TYPE std_dev) {
+      std::default_random_engine generator(rand());
+      std::normal_distribution<_TYPE> rand_gen(mean, std_dev);
+      for (int i = 0; i < n_row; i++) {
+        for (int j = 0; j < n_col; j++) {
+          matrix_data[i][j] = rand_gen(generator);
+        }
+      }
+    }
+
     void reShape(int rows, int cols) {
       std::vector<_TYPE> element_vector;
       for (int i = 0; i < n_row; i++) {
@@ -102,10 +120,28 @@ namespace cognosco {
           rows, std::vector<_TYPE>(cols, _TYPE()));
       setElements(element_vector);
     }
+
+    void elementOperation(_TYPE (*func)(_TYPE)) {
+      for (int i = 0; i < n_row; i++) {
+        for (int j = 0; j < n_col; j++) {
+          matrix_data[i][j] = func(matrix_data[i][j]);
+        }
+      }
+    }
     // Property Retrieval
     int getDim() { return (2); }
 
     std::pair<int, int> getShape() { return (std::make_pair(n_row, n_col)); }
+
+    std::vector<_TYPE> getVector() {
+      std::vector<_TYPE> element_vector;
+      for (int i = 0; i < n_row; i++) {
+        for (int j = 0; j < n_col; j++) {
+          element_vector.push_back(matrix_data[i][j]);
+        }
+      }
+      return (element_vector);
+    }
 
     // Visualization
     std::string getString() {
