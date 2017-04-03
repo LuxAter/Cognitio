@@ -2,7 +2,7 @@
 #include <iostream>
 #include "cognosco.hpp"
 #include "matrix/matrix_header.hpp"
-#include "softmax.hpp"
+#include "neuron.hpp"
 
 cognosco::Network::Network() {}
 
@@ -42,7 +42,7 @@ std::vector<double> cognosco::Network::ForwardProp(std::vector<double> input) {
   matrix<double> value_mat(n_input, 1, input);
   for (int i = 1; i < n_layer; i++) {
     value_mat =
-        Softmax(dot(weight_matrix[i - 1], value_mat) + bias_matrix[i - 1]);
+        Sigmoid(dot(weight_matrix[i - 1], value_mat) + bias_matrix[i - 1]);
   }
   return (value_mat.getVector());
 }

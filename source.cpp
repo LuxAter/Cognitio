@@ -1,7 +1,7 @@
 #include <iostream>
 #include "cognosco_files/cognosco.hpp"
 #include "cognosco_files/matrix/matrix_header.hpp"
-#include "cognosco_files/softmax.hpp"
+#include "cognosco_files/neuron.hpp"
 
 using namespace cognosco;
 
