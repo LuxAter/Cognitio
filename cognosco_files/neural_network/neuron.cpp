@@ -1,5 +1,5 @@
 #include <math.h>
-#include "matrix/matrix_header.hpp"
+#include "../matrix/matrix_header.hpp"
 #include "neuron.hpp"
 
 cognosco::matrix<double> cognosco::Softmax(cognosco::matrix<double> input) {
