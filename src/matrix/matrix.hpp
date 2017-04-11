@@ -143,6 +143,16 @@ namespace cognosco {
 
     std::pair<int, int> GetShape() { return (std::make_pair(n_row, n_col)); }
 
+    std::vector<_T> GetVector() {
+      std::vector<_T> element_vector;
+      for (int i = 0; i < n_row; i++) {
+        for (int j = 0; j < n_col; j++) {
+          element_vector.push_back(terms[i][j]);
+        }
+      }
+      return (element_vector);
+    }
+
     std::string GetString() {
       std::string str = "[";
       for (int i = 0; i < n_row; i++) {
@@ -173,10 +183,10 @@ namespace cognosco {
         return (_T());
       }
     }
-
-   private:
     int n_row, n_col;
     std::vector<std::vector<_T>> terms;
+
+   private:
   };
 }
 #endif

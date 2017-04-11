@@ -1,7 +1,7 @@
 #ifndef COGNOSCO_NETWORK_HPP
 #define COGNOSCO_NETWORK_HPP
 #include <vector>
-#include "../matrix/matrix.hpp"
+#include "../matrix/matrix_headers.hpp"
 namespace cognosco {
   class Network {
    public:
@@ -11,8 +11,10 @@ namespace cognosco {
     Network(const Network& copy_net);
     ~Network();
 
+    std::vector<double> ForwardProp(std::vector<double> input);
+
    private:
-    int n_layers, n_input, n_output;
+    int n_layer, n_input, n_output;
     std::vector<Matrix<double>> weight_matrix, bias_matrix;
   };
 }
