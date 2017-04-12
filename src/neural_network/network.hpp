@@ -13,9 +13,12 @@ namespace cognosco {
 
     std::vector<double> ForwardProp(std::vector<double> input);
 
+    std::string GetString();
+
    private:
     int n_layer, n_input, n_output;
     std::vector<Matrix<double>> weight_matrix, bias_matrix;
+    std::vector<int> layer_layout;
   };
 }
 #endif

@@ -2,6 +2,7 @@
 #include <vector>
 #include "../matrix/matrix_headers.hpp"
 #include "network.hpp"
+#include "neuron.hpp"
 
 cognosco::Network::Network() {
   n_layer = 0;
@@ -15,8 +16,10 @@ cognosco::Network::Network(int layer_count, ...) {
   va_start(lnc, layer_count);
   int last_neurons = va_arg(lnc, int);
   n_input = last_neurons;
+  layer_layout.push_back(last_neurons);
   for (int i = 1; i < n_layer; i++) {
     int neurons = va_arg(lnc, int);
+    layer_layout.push_back(neurons);
     Matrix<double> bias_mat(neurons, 1);
     bias_mat.FillRand(0.0, 1.0);
     bias_matrix.push_back(bias_mat);
@@ -30,6 +33,7 @@ cognosco::Network::Network(int layer_count, ...) {
 }
 
 cognosco::Network::Network(std::vector<int> layers) {
+  layer_layout = layers;
   n_layer = layers.size();
   if (layers.size() > 0) {
     n_input = layers[0];
@@ -64,12 +68,34 @@ cognosco::Network::~Network() {
 
 std::vector<double> cognosco::Network::ForwardProp(std::vector<double> input) {
   std::vector<double> output;
+  return (input);
   if (input.size() != n_input) {
   } else {
     Matrix<double> value_mat(n_input, 1, input);
-    for (int i = 1; i < n_layer; i++) {
+    for (int i = 1; i < n_layer - 1; i++) {
+      value_mat =
+          Sigmoid(Dot(weight_matrix[i - 1], value_mat) + bias_matrix[i - 1]);
     }
+    value_mat = Softmax(Dot(weight_matrix[n_layer - 1], value_mat) +
+                        bias_matrix[n_layer - 1]);
     output = value_mat.GetVector();
   }
   return (output);
+}
+
+std::string cognosco::Network::GetString() {
+  std::string str = "";
+  int length = std::to_string(n_layer).size();
+  for (int i = 0; i < n_layer; i++) {
+    std::string layer_str = "";
+    for (int j = 0; j < layer_layout[i]; j++) {
+      layer_str += " X";
+    }
+    ssize_t buff_size =
+        snprintf(NULL, 0, "%*i|%s\n", length, i, layer_str.c_str());
+    char* formated_string = new char[buff_size];
+    sprintf(formated_string, "%*i|%s\n", n_layer, i, layer_str.c_str());
+    str += std::string(formated_string);
+  }
+  return (str);
 }

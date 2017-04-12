@@ -72,18 +72,28 @@ namespace cognosco {
             current_row++;
           }
         }
+      } else {
+        pessum::Log(pessum::WARNING, "Number of terms must be %i not  %i",
+                    "SetElements", n_row * n_col, elements.size());
       }
     }
 
     void SetElements(std::vector<std::vector<_T>> elements) {
       if (elements.size() == n_row && elements[0].size() == n_col) {
         terms = elements;
+      } else {
+        pessum::Log(pessum::WARNING,
+                    "Terms must be in format of %ix%i not %ix%i", "SetElements",
+                    n_row, n_col, elements.size(), elements[0].size());
       }
     }
 
     void Set(int i, int j, _T val) {
       if (i > 0 && i < n_row && j > 0 && j < n_col) {
         terms[i][j] = val;
+      } else {
+        pessum::Log(pessum::WARNING, "%i,%i is not a valid location", "Set", i,
+                    j);
       }
     }
 
@@ -180,6 +190,8 @@ namespace cognosco {
       if (i > -1 && j > -1 && i < n_row && j < n_col) {
         return (terms[i][j]);
       } else {
+        pessum::Log(pessum::WARNING, "%i,%i is not a valid location", "Set", i,
+                    j);
         return (_T());
       }
     }

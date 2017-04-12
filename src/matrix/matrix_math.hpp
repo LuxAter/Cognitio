@@ -3,7 +3,7 @@
 #include "matrix.hpp"
 namespace cognosco {
   template <class _T>
-  _T sum(Matrix<_T> mat) {
+  _T Sum(Matrix<_T> mat) {
     _T sum_value = _T();
     for (int i = 0; i < mat.n_row; i++) {
       for (int j = 0; j < mat.n_col; j++) {
@@ -14,7 +14,7 @@ namespace cognosco {
   }
 
   template <class _T>
-  Matrix<_T> sum(Matrix<_T> mat, int axis) {
+  Matrix<_T> Sum(Matrix<_T> mat, int axis) {
     Matrix<_T> sum_mat;
     if (axis == 0) {
       sum_mat = Matrix<_T>(1, mat.n_col);
@@ -35,7 +35,7 @@ namespace cognosco {
   }
 
   template <class _T>
-  Matrix<_T> transpose(Matrix<_T> mat) {
+  Matrix<_T> Transpose(Matrix<_T> mat) {
     Matrix<_T> transpose_mat(mat.n_col, mat.n_row);
     for (int i = 0; i < mat.n_row; i++) {
       for (int j = 0; j < mat.n_col; j++) {
@@ -46,7 +46,7 @@ namespace cognosco {
   }
 
   template <class _T>
-  _T det(Matrix<_T> mat) {
+  _T Det(Matrix<_T> mat) {
     _T det_value = _T();
     if (mat.n_row == mat.n_col) {
       if (mat.n_row == 2) {
@@ -64,15 +64,19 @@ namespace cognosco {
               }
             }
           }
-          det_value += (pow(-1, i) * mat.terms[0][i] * det(sub_mat));
+          det_value += (pow(-1, i) * mat.terms[0][i] * Det(sub_mat));
         }
       }
+    } else {
+      pessum::Log(pessum::WARNING,
+                  "Matrix must be square not %ix%i for determinant", "Det",
+                  mat.n_row, mat.n_col);
     }
     return (det_value);
   }
 
   template <class _T>
-  _T trace(Matrix<_T> mat) {
+  _T Trace(Matrix<_T> mat) {
     _T trace_value = _T();
     for (int i = 0; i < mat.n_row && i < mat.n_col; i++) {
       trace_value += mat.terms[i][i];
@@ -81,9 +85,9 @@ namespace cognosco {
   }
 
   template <class _T>
-  Matrix<_T> inverse(Matrix<_T> mat) {
+  Matrix<_T> Inverse(Matrix<_T> mat) {
     Matrix<_T> mat_inverse(mat.n_row, mat.n_col);
-    if (mat.n_row == mat.n_col && det(mat) != _T()) {
+    if (mat.n_row == mat.n_col && Det(mat) != _T()) {
       for (int r = 0; r < mat_inverse.n_row; r++) {
         for (int c = 0; c < mat_inverse.n_col; c++) {
           Matrix<_T> sub_mat(mat.n_row - 1, mat.n_col - 1);
@@ -103,14 +107,19 @@ namespace cognosco {
           mat_inverse.terms[r][c] = (pow(-1, r) * pow(-1, c) * det(sub_mat));
         }
       }
-      mat_inverse = transpose(mat_inverse);
-      mat_inverse = (1 / det(mat)) * mat_inverse;
+      mat_inverse = Transpose(mat_inverse);
+      mat_inverse = (1 / Det(mat)) * mat_inverse;
+    } else {
+      pessum::Log(pessum::WARNING,
+                  "Matrix must be square not %ix%i and must have a determinant "
+                  "not equal to %i not %i",
+                  "Inverse", mat.n_row, mat.n_col, _T(), Det(mat));
     }
     return (mat_inverse);
   }
 
   template <class _T>
-  Matrix<_T> dot(Matrix<_T> mat_a, Matrix<_T> mat_b) {
+  Matrix<_T> Dot(Matrix<_T> mat_a, Matrix<_T> mat_b) {
     Matrix<_T> mat_dot(mat_a.n_row, mat_b.n_col);
     if (mat_a.n_col == mat_b.n_row) {
       for (int i = 0; i < mat_a.n_row; i++) {
@@ -120,6 +129,11 @@ namespace cognosco {
           }
         }
       }
+    } else {
+      pessum::Log(
+          pessum::WARNING,
+          "Columns of matrix A must match the rows of matrix B not %i and %i",
+          "Dot", mat_a.n_col, mat_b.n_row);
     }
     return (mat_dot);
   }
