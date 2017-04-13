@@ -68,16 +68,16 @@ cognosco::Network::~Network() {
 
 std::vector<double> cognosco::Network::ForwardProp(std::vector<double> input) {
   std::vector<double> output;
-  return (input);
   if (input.size() != n_input) {
+    pessum::Log(pessum::WARNING, "Number of input values %i does not equal number of input neurons %i", "ForwardProp", input.size(), n_input);
   } else {
     Matrix<double> value_mat(n_input, 1, input);
-    for (int i = 1; i < n_layer - 1; i++) {
+    for (int i = 1; i < n_layer; i++) {
       value_mat =
           Sigmoid(Dot(weight_matrix[i - 1], value_mat) + bias_matrix[i - 1]);
     }
-    value_mat = Softmax(Dot(weight_matrix[n_layer - 1], value_mat) +
-                        bias_matrix[n_layer - 1]);
+    //value_mat = Softmax(Dot(weight_matrix[n_layer - 1], value_mat) +
+    //                    bias_matrix[n_layer - 1]);
     output = value_mat.GetVector();
   }
   return (output);

@@ -11,10 +11,10 @@ namespace cognosco {
   }
   template <class _T>
   Matrix<_T> Softmax(Matrix<_T> input) {
-    _T total = 0;
+    _T total = _T();
     input.ElementOperation(exp);
     total = Sum(input);
-    input = (1.0 / total) * input;
+    input = (input / total);
     return (input);
   }
 }

@@ -37,7 +37,7 @@ int main() {
   Network net(3, 3, 5, 2);
   std::cout << net.GetString() << "\n";
   std::vector<double> in = {2, 5, 7};
-  std::cout << PrintVec(in) << "->\n";
-  // PrintVec(net.ForwardProp(in));
+  std::cout << PrintVec(in) << "->";
+  std::cout << PrintVec(net.ForwardProp(in)) << "\n";
   return (0);
 }

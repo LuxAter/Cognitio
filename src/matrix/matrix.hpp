@@ -27,6 +27,8 @@ namespace cognosco {
     }
 
     Matrix(int rows, int cols, std::vector<_T> elements) {
+      n_row = rows;
+      n_col = cols;
       terms = std::vector<std::vector<_T>>(n_row, std::vector<_T>(n_col, _T()));
       int current_row = 0, current_col = 0;
       for (int i = 0; i < elements.size(); i++) {
