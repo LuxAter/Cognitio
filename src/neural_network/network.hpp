@@ -12,7 +12,8 @@ namespace cognosco {
     ~Network();
 
     std::vector<double> ForwardProp(std::vector<double> input);
-
+    std::pair<std::vector<Matrix<double>>, std::vector<Matrix<double>>>
+    BackwardProp(std::vector<double> input, std::vector<double> expected);
     std::string GetString();
 
    private:

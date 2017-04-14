@@ -88,6 +88,19 @@ std::vector<double> cognosco::Network::ForwardProp(std::vector<double> input) {
   return (output);
 }
 
+std::pair<std::vector<cognosco::Matrix<double>>, std::vector<cognosco::Matrix<double>>>
+cognosco::Network::BackwardProp(std::vector<double> input,
+                                std::vector<double> expected) {
+  std::pair<std::vector<Matrix<double>>, std::vector<Matrix<double>>> partials;
+  Matrix<double> output(n_output, 1, ForwardProp(input));
+  Matrix<double> expected_out(n_output, 1, expected);
+  Matrix<double> delta(n_output, 1);
+  delta = (output - expected_out) * SigmoidPrime(layer_z[layer_z.size() - 1]);
+  partials.first.push_back(delta);
+  partials.second.push_back(delta * layer_a[layer_a.size() - 2]);
+  return(partials);
+}
+
 std::string cognosco::Network::GetString() {
   std::string str = "";
   int length = std::to_string(n_layer).size();
