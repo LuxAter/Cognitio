@@ -19,6 +19,7 @@ namespace cognosco {
     int n_layer, n_input, n_output;
     std::vector<Matrix<double>> weight_matrix, bias_matrix;
     std::vector<int> layer_layout;
+    std::vector<Matrix<double>> layer_z, layer_a;
   };
 }
 #endif
