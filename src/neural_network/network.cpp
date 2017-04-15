@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <iostream>
 #include <vector>
 #include "../matrix/matrix_headers.hpp"
 #include "network.hpp"
@@ -17,6 +18,8 @@ cognosco::Network::Network(int layer_count, ...) {
   int last_neurons = va_arg(lnc, int);
   n_input = last_neurons;
   layer_layout.push_back(last_neurons);
+  bias_matrix.push_back(Matrix<double>());
+  weight_matrix.push_back(Matrix<double>());
   for (int i = 1; i < n_layer; i++) {
     int neurons = va_arg(lnc, int);
     layer_layout.push_back(neurons);
@@ -38,6 +41,8 @@ cognosco::Network::Network(std::vector<int> layers) {
   if (layers.size() > 0) {
     n_input = layers[0];
     n_output = layers[layers.size() - 1];
+    bias_matrix.push_back(Matrix<double>());
+    weight_matrix.push_back(Matrix<double>());
     for (int i = 1; i < n_layer; i++) {
       int neurons = layers[i];
       Matrix<double> bias_mat(neurons, 1);
@@ -77,7 +82,7 @@ std::vector<double> cognosco::Network::ForwardProp(std::vector<double> input) {
     Matrix<double> value_mat(n_input, 1, input);
     layer_z.clear();
     layer_a.clear();
-    for (int i = 1; i < n_layer; i++) {
+    for (int i = 2; i <= n_layer; i++) {
       value_mat = Dot(weight_matrix[i - 1], value_mat) + bias_matrix[i - 1];
       layer_z.push_back(value_mat);
       Sigmoid(value_mat);
@@ -98,7 +103,14 @@ cognosco::Network::BackwardProp(std::vector<double> input,
   Matrix<double> delta(n_output, 1);
   delta = (output - expected_out) * SigmoidPrime(layer_z[layer_z.size() - 1]);
   partials.first.push_back(delta);
-  // partials.second.push_back(delta * layer_a[layer_a.size() - 2]);
+  partials.second.push_back(Dot(layer_a[layer_a.size() - 2], Transpose(delta)));
+  for (int i = n_layer - 2; i > 0; i--) {
+    // printf("δ^%i = ((W^%i)^T * δ^%i) ʘ σ\'(z^%i)\n", i, i + 1, i + 1, i);
+    delta = (Dot(Transpose(weight_matrix[i + 1]), delta) *
+             SigmoidPrime(layer_z[i]));
+    partials.first.push_back(delta);
+    partials.second.push_back(Dot(layer_a[i - 1], Transpose(delta)));
+  }
   return (partials);
 }
 

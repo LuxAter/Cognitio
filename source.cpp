@@ -83,25 +83,17 @@ std::string Mutate(std::string a, double rate) {
 int main() {
   pessum::SetLogHandle(Handle);
   srand(time(NULL));
-
-  Genetic<std::string> gen_algo;
-  gen_algo.SetFunction(Gen);
-  gen_algo.SetFunction(Fitness);
-  gen_algo.SetFunction(CrossOver);
-  gen_algo.SetFunction(Mutate);
-
-  gen_algo.GenPop(500);
-  for (int i = 0; i < 1000 && gen_algo[0] != goal; i++) {
-    gen_algo.Run();
-    std::cout << "[" << i << "]" << gen_algo[0] << "\n";
-  }
-  // gen_algo.Print();
-
-  // Network net(3, 3, 5, 2);
-  // std::cout << net.GetString() << "\n";
-  // std::vector<double> in = {2, 5, 7};
-  // std::cout << PrintVec(in) << "->";
-  // std::cout << PrintVec(net.ForwardProp(in)) << "\n";
+  // Matrix<int> mata(3, 1, std::vector<int>{1, 2, 3});
+  // Matrix<int> matb(1, 2, std::vector<int>{4, 5});
+  // std::cout << mata.GetString() << "*" << matb.GetString() << "\n";
+  // mata = Dot(mata, matb);
+  // std::cout << "=" << mata.GetString();
+  Network net(5, 3, 5, 5, 5, 2);
+  std::cout << net.GetString() << "\n";
+  std::vector<double> in = {2, 5, 7};
+  std::cout << PrintVec(in) << "->";
+  std::cout << PrintVec(net.ForwardProp(in)) << "\n";
+  net.BackwardProp(in, {4, 1});
   pessum::SaveLog("out.log");
   return (0);
 }

@@ -130,10 +130,10 @@ namespace cognosco {
         }
       }
     } else {
-      pessum::Log(
-          pessum::WARNING,
-          "Columns of matrix A must match the rows of matrix B not %i and %i",
-          "Dot", mat_a.n_col, mat_b.n_row);
+      pessum::Log(pessum::WARNING,
+                  "Columns of matrix A must match the rows of matrix B not "
+                  "%ix%i and %ix%i",
+                  "Dot", mat_a.n_row, mat_a.n_col, mat_b.n_row, mat_b.n_col);
     }
     return (mat_dot);
   }
