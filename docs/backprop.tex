@@ -1,0 +1,18 @@
+\documentclass{subfile}
+\begin{document}
+\section{BackPropagation}
+\begin{multicols}{2}
+  Backpropagation is an algorithm that is used to determine the error in each of the weights and biases of a neural network. Backpropagation can be though of as determing the gradiant of the cost function ($C$).
+\end{multicols}
+\begin{align}
+  \delta^{L} &= \nabla_{a}C\odot\sigma'\left(z^{L}\right)\label{BP:1}\\
+  \delta^{l} &= \left( {\left( w^{l+1} \right)}^{T} \delta^{l+1} \right) \odot \sigma' \left( z^{l} \right)\label{BP:2}\\
+  \frac{\partial C}{\partial b^{l}_{j}} &= \delta^{l}_{j}\label{BP:3}\\
+  \frac{\partial C}{\partial w^{l}_{jk}} &= a^{l-1}_{k}\delta^{l}_{j}\label{BP:4}
+\end{align}
+\begin{multicols}{2}
+  These are the four base equation behind the back propagation algorithm. Each one will be explaned in this section.
+  \par
+  \eqref{BP:1}: This is the first equation of the back propagation algorithm. It is used to find the error in the final set of neurons, by determining the difference between the calculated output, and the desired output.
+\end{multicols}
+\end{document}

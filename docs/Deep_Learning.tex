@@ -1,0 +1,58 @@
+\documentclass[10pt]{article}
+
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{subfiles}
+\usepackage{fancyhdr}
+\usepackage{multicol,caption}
+\usepackage{listings}
+\usepackage[toc,page]{appendix}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{xcolor}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.13}
+\lstset{%
+  title=\lstname,
+  backgroundcolor=\color{white},
+  basicstyle=\footnotesize,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  commentstyle=\color{green},
+  extendedchars=true,
+  frame=single,
+  keepspaces=true,
+  keywordstyle=\color{blue},
+  language=C++,
+  numbers=left,
+  numberstyle=\tiny\color{black},
+  rulecolor=\color{black},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  stepnumber=1,
+  stringstyle=\color{magenta},
+  tabsize=2
+  }
+\title{Neural Networks}
+\author{Arden Rasmussen}
+\date{15/04/2017}
+\pagestyle{fancy}
+\linespread{1}
+\begin{document}
+\pagenumbering{gobble}
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+\begin{abstract}
+This article will organize an extensive list of sorting algorithms, in order to compare their efficiency in different situations. The different sorting algorithms will be compared based on the run time for the algorithm, the number of comparisons required for the algorithm, and the number of array access required for the algorithm. These properties of each algorithm will be determined by averaging runs for a multitude of arrays of the same length, to achieve an average value.
+\end{abstract}
+\newpage
+\subfile{intro.tex}
+\subfile{backprop.tex}
+\end{document}
