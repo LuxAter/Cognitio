@@ -24,6 +24,7 @@ namespace cognosco {
 
    private:
     int epoch = 0;
+    double learning_rate = 3.0;
     int n_layer, n_input, n_output;
     std::vector<Matrix<double>> weight_matrix, bias_matrix;
     std::vector<int> layer_layout;

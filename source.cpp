@@ -96,23 +96,16 @@ std::vector<std::pair<std::vector<double>, std::vector<double>>> GenData(
 int main() {
   pessum::SetLogHandle(Handle);
   srand(time(NULL));
-  // Matrix<int> mata(3, 1, std::vector<int>{1, 2, 3});
-  // Matrix<int> matb(1, 2, std::vector<int>{4, 5});
-  // std::cout << mata.GetString() << "*" << matb.GetString() << "\n";
-  // mata = Dot(mata, matb);
-  // std::cout << "=" << mata.GetString();
-  Network net(5, 3, 5, 5, 5, 1);
+  Network net(5, 3, 5, 100, 100, 1);
   std::cout << net.GetString() << "\n";
   std::vector<double> in = {2, 5, 7};
   std::cout << PrintVec(in) << "->";
   std::cout << PrintVec(net.ForwardProp(in)) << "\n";
-  // net.BackwardProp(in, {4, 1});
   std::vector<std::pair<std::vector<double>, std::vector<double>>> data =
-      GenData(10000);
-  net.StochasticGradientDescent(data, 10, 10);
+      GenData(100);
+  net.StochasticGradientDescent(data, 1, 10);
   std::cout << PrintVec(in) << "->";
   std::cout << PrintVec(net.ForwardProp(in)) << "\n";
-  // net.BackwardProp(in, {4, 1});
   pessum::SaveLog("out.log");
   return (0);
 }

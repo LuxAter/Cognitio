@@ -86,8 +86,8 @@ std::vector<double> cognosco::Network::ForwardProp(std::vector<double> input) {
     layer_z.push_back(value_mat);
     Sigmoid(value_mat);
     layer_a.push_back(value_mat);
-    for (int i = 2; i <= n_layer; i++) {
-      value_mat = Dot(weight_matrix[i - 1], value_mat) + bias_matrix[i - 1];
+    for (int i = 1; i < n_layer; i++) {
+      value_mat = Dot(weight_matrix[i], value_mat) + bias_matrix[i];
       layer_z.push_back(value_mat);
       Sigmoid(value_mat);
       layer_a.push_back(value_mat);
@@ -161,20 +161,22 @@ void cognosco::Network::StochasticGradientDescent(
           }
         }
         for (int j = 0; j < delta.first.size(); j++) {
-          delta.first[j] = (1.0f / (double)batch_size) * delta.first[j];
+          delta.first[j] =
+              (learning_rate / (double)batch_size) * delta.first[j];
           // printf("bias matrix %i: %ix%i ->", j,
           // bias_matrix[j].GetShape().first,
           //        bias_matrix[j].GetShape().second);
-          bias_matrix[j] = bias_matrix[j] + delta.first[j];
+          bias_matrix[j] = bias_matrix[j] - delta.first[j];
           // printf(" %ix%i\n", bias_matrix[j].GetShape().first,
           //        bias_matrix[j].GetShape().second);
         }
         for (int j = 0; j < delta.second.size(); j++) {
-          delta.second[j] = (1.0f / (double)batch_size) * delta.second[j];
+          delta.second[j] =
+              (learning_rate / (double)batch_size) * delta.second[j];
           // printf("weight matrix %i: %ix%i ->", j,
           //        weight_matrix[j].GetShape().first,
           //        weight_matrix[j].GetShape().second);
-          weight_matrix[j] = weight_matrix[j] + delta.second[j];
+          weight_matrix[j] = weight_matrix[j] - delta.second[j];
           // printf(" %ix%i\n", weight_matrix[j].GetShape().first,
           //        weight_matrix[j].GetShape().second);
         }
