@@ -2,6 +2,7 @@
 #define COGNITIO_NEURAL_NETWORK_HPP
 #include <vector>
 #include <string>
+
 namespace cognitio{
 
   std::vector<double> CreateRandBias(int size, double mean, double std_dev);
@@ -14,7 +15,12 @@ namespace cognitio{
       NeuralNetwork(std::vector<int> layout);
       NeuralNetwork(const NeuralNetwork& copy);
       ~NeuralNetwork();
+
+      std::vector<double> ForwardProp(std::vector<double> input);
+      std::pair<std::vector<std::vector<double>>, std::vector<std::vector<std::vector<double>>>> BackwardProp(std::vector<double> input, std::vector<double> expected_output);
+
       std::string GetVis(bool vertical);
+      std::string PrintData();
     private:
       int n_layers, n_input, n_output;
       std::vector<int> network_layout;

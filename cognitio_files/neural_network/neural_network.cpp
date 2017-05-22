@@ -3,6 +3,10 @@
 #include <stdarg.h>
 #include <random>
 #include <string>
+#include <pessum.h>
+#include "activation_functions.hpp"
+#include "calculation.hpp"
+
 
 std::vector<double> cognitio::CreateRandBias(int size, double mean, double std_dev){
   std::vector<double> bias;
@@ -79,6 +83,29 @@ cognitio::NeuralNetwork::~NeuralNetwork(){
   n_output = 0;
 }
 
+std::vector<double> cognitio::NeuralNetwork::ForwardProp(std::vector<double> input){
+  std::vector<double>output;
+  if(input.size() != n_input){
+    pessum::Log(pessum::WARNING, "Number of inputs provided does not match number of inputs required for neural network, %i!=%i", "cognitio::NeuralNetwork::ForwardProp", input.size(), n_input);
+  }else{
+    activation_values.push_back(input);
+    for(int i = 1; i < n_layers; i++){
+      z_values.push_back(CalculateZ(weights[i-1], biases[i-1], activation_values[i-1]));
+      activation_values.push_back(Sigmoid(z_values.back())); 
+    }
+    if(activation_values.back().size() != n_output){
+      pessum::Log(pessum::WARNING, "Number of outputs produced does not match number of outputs expected for neural network, %i!=%i", "cognitio::NeuralNetwork::ForwardProp", activation_values.back().size(), n_output);
+    }
+    output = activation_values.back();
+  }
+  return(output);
+}
+
+std::pair<std::vector<std::vector<double>>, std::vector<std::vector<std::vector<double>>>> cognitio::NeuralNetwork::BackwardProp(std::vector<double> input, std::vector<double> expected_output){
+
+}
+
+
 std::string cognitio::NeuralNetwork::GetVis(bool vertical){
   std::string outstr;
   if(vertical == true){
@@ -106,4 +133,35 @@ std::string cognitio::NeuralNetwork::GetVis(bool vertical){
     }
   }
   return(outstr);
+}
+
+std::string cognitio::NeuralNetwork::PrintData(){
+  std::string output;
+  output += "Biases:\n=======\n";
+  for(int i = 0; i < biases.size(); i++){
+    output += std::to_string(i + 1) + ": ";
+    for(int j = 0; j < biases[i].size(); j++){
+      output += std::to_string(biases[i][j]);
+      if(j != biases[i].size() - 1){
+        output+= ",";
+      }
+    }
+    output += "\n";
+  }
+  output += "\nWeights:\n========\n";
+  for(int i = 0; i < weights.size(); i++){
+    output += std::to_string(i + 1) + ":\n";
+    for(int j = 0; j < weights[i].size(); j++){
+      output += "  " + std::to_string(j) + ": ";
+      for(int k = 0; k < weights[i][j].size(); k++){
+        output += std::to_string(weights[i][j][k]);
+        if(k != weights[i][j].size() - 1){
+          output += ",";
+        }
+      }
+      output += "\n";
+    }
+    output += "\n";
+  }
+  return(output);
 }
