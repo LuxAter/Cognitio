@@ -176,7 +176,24 @@ double cognitio::NeuralNetwork::Evaluate(
   double count = 0;
   for (int i = 0; i < test_batch.size(); i++) {
     std::vector<double> output = ForwardProp(test_batch[i].first);
-    double diff = 0.0;
+    double max_out = -1, max_expected = -1;
+    int max_out_in = -1, max_ex_in = -1;
+    for(int j = 0; j < test_batch[i].second.size(); j++){
+      if(test_batch[i].second[j] > max_expected){
+        max_expected = test_batch[i].second[j];
+        max_ex_in = j;
+      }
+    }
+    for(int j = 0; j < output.size(); j++){ 
+      if(output[j] > max_out){
+        max_out = output[j];
+        max_out_in = j;
+      }
+    }
+    if(max_ex_in == max_out_in){
+      count++;
+    }
+    /*double diff = 0.0;
     for (int j = 0; j < output.size() && j < test_batch[i].second.size(); j++) {
       if (test_batch[i].second[j] != 0.0) {
         diff += (1.0 - (fabs(test_batch[i].second[j] - output[j]) /
@@ -186,7 +203,7 @@ double cognitio::NeuralNetwork::Evaluate(
       }
     }
     diff /= output.size();
-    count += diff;
+    count += diff;*/
   }
   return (count);
 }
@@ -212,7 +229,7 @@ std::vector<double> cognitio::NeuralNetwork::ForwardProp(
           act_str += ",";
         }
       }
-      pessum::Log(pessum::DEBUG, "%s", "", act_str.c_str());
+      //pessum::Log(pessum::DEBUG, "%s", "", act_str.c_str());
     }
     if (activation_values.back().size() != n_output) {
       pessum::Log(pessum::WARNING,
