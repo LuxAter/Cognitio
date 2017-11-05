@@ -1,0 +1,63 @@
+[
+    {
+        "arguments": [
+            "c++", 
+            "-c", 
+            "-I/home/arden/Programming/cpp/cognitio/cognitio", 
+            "-I/home/arden/Programming/cpp/cognitio/external/googletest/googletest/include", 
+            "-std=c++11", 
+            "-w", 
+            "-o", 
+            "/home/arden/Programming/cpp/cognitio/build/test/./tmp.o", 
+            "tmp.cpp"
+        ], 
+        "directory": "/home/arden/Programming/cpp/cognitio/test", 
+        "file": "tmp.cpp"
+    }, 
+    {
+        "arguments": [
+            "c++", 
+            "-c", 
+            "-I/home/arden/Programming/cpp/cognitio/cognitio", 
+            "-std=c++11", 
+            "-w", 
+            "-fprofile-arcs", 
+            "-ftest-coverage", 
+            "-o", 
+            "/home/arden/Programming/cpp/cognitio/build/source/./main.o", 
+            "main.cpp"
+        ], 
+        "directory": "/home/arden/Programming/cpp/cognitio/source", 
+        "file": "main.cpp"
+    }, 
+    {
+        "arguments": [
+            "c++", 
+            "-c", 
+            "-isystem", 
+            "/home/arden/Programming/cpp/cognitio/external/googletest/googletest/include", 
+            "-I/home/arden/Programming/cpp/cognitio/external/googletest/googletest", 
+            "-pthread", 
+            "-o", 
+            "/home/arden/Programming/cpp/cognitio/build/gtest/gtests_main.o", 
+            "googletest/googletest/src/gtest_main.cc"
+        ], 
+        "directory": "/home/arden/Programming/cpp/cognitio/external", 
+        "file": "googletest/googletest/src/gtest_main.cc"
+    }, 
+    {
+        "arguments": [
+            "c++", 
+            "-c", 
+            "-isystem", 
+            "/home/arden/Programming/cpp/cognitio/external/googletest/googletest/include", 
+            "-I/home/arden/Programming/cpp/cognitio/external/googletest/googletest", 
+            "-pthread", 
+            "-o", 
+            "/home/arden/Programming/cpp/cognitio/build/gtest/gtest-all.o", 
+            "googletest/googletest/src/gtest-all.cc"
+        ], 
+        "directory": "/home/arden/Programming/cpp/cognitio/external", 
+        "file": "googletest/googletest/src/gtest-all.cc"
+    }
+]
