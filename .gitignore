@@ -1,4 +1,7 @@
 *.o
 *.d
 *.log
-UNNAMED_PROGRAM
+*.swp
+build/*
+Cognitio
+unit-test

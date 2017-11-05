@@ -1,76 +1,133 @@
+SHELL = /bin/bash
+
+export NAME= Cognitio
+export LINK=  
+export INCLUDE=
+export TYPE= project_type
+
+export SOURCE_DIR= source
+export TEST_DIR= test
+export EXTERNAL_DIR = external
+export BUILD_DIR= build
+export INCLUDE_DIR= include
+
+export BASE_PATH=$(shell pwd)
+
+export COMPILER=g++
+export CXXFLAGS= -MMD -std=c++11 -w -c
+
+export INSTALL_PATH=/usr/local
+
+export GCOV_LINK = -lgcov --coverage
+export GCOV_FLAG = -fprofile-arcs -ftest-coverage
+
+export COMMON_INCLUDE=-I$(BASE_PATH)/$(INCLUDE_DIR) $(INCLUDE)
+
+export SECTION_COLOR=\033[1;97m
+export TARGET_COLOR=\033[0;34m
+export LINK_COLOR=\033[0;35m
+export CLEAN_COLOR=\033[0;33m
+export COMPILE_COLOR=\033[0;32m
+export INSTALL_COLOR=\033[0;36m
+export ERROR_COLOR=\033[1;31m
+export NO_COLOR=\033[m
+
 ifndef .VERBOSE
-   .SILENT:
+  .SILENT:
 endif
-export COMPILER = clang++
-export FLAGS = -MMD -std=c++11 -w -c
-CPP_FILES = $(wildcard *.cpp)
-TOP_DIR = $(CPP_FILES:.cpp=.o)
-OBJ_FILES := $(shell find -name '*.o')
-OBJ_LIB := $(filter-out ./$(TOP_DIR),$(OBJ_FILES))
-LINK = -lpessum
-NAME = cognitio
 
-all: $(TOP_DIR) subsystem $(NAME)
-	@setterm -fore green
-	@printf "==========>>>>>>>>>>Compiled $(NAME)<<<<<<<<<<==========\n"
-	@setterm -fore white
+define print_section
+str="$(1)";\
+    line_length=$${#str};\
+    printf "%b%s\n" "$(SECTION_COLOR)" "$$str";\
+    while [ $$line_length -gt 0 ]; do\
+      printf "=";\
+      let line_length=line_length-1;\
+    done;\
+    printf "%b\n" "$(NO_COLOR)"
+endef
 
-$(NAME): $(TOP_DIR) $(OBJ_FILES)
-	@setterm -fore red
-	@printf ">>>>>>>>>>----------Core Compile----------<<<<<<<<<<\n"
-	@setterm -fore white
-	$(COMPILER) $(OBJ_FILES) -o $(NAME) $(LINK)
+define print
+printf "%b%s%b\n" "$(2)" "$(1)" "$(NO_COLOR)"
+endef
 
-%.o: %.cpp
-	@printf "Compiling $*.cpp...\n"
-	@$(COMPILER) $(FLAGS) -o $(notdir $*).o $*.cpp
+define help
+printf "%b%*s%b: %s\n" "$(TARGET_COLOR)" 14 "$(1)" "$(NO_COLOR)" "$(2)"
+endef
 
-.PHONY : subsystem
-subsystem:
-	@setterm -fore cyan; printf "$(shell pwd)/cognitio_files:\n"; setterm -fore white
-	@cd cognitio_files && $(MAKE)
+.PHONY : all
+all: external source test
 
 .PHONY : clean
-clean:
-	@setterm -fore red
-	@printf "Removing *.o files\n"
-	@find . -name "*.o" -type f -delete
-	@printf "Removing *.d files\n"
-	@find . -name "*.d" -type f -delete
-	@printf "Removed all *.o and *.d files\n"
-	@setterm -fore white
-
-.PHONY : new
-new: clean all
+clean: clean-external clean-source clean-test
 
 .PHONY : install
-install: clean all
-	cp $(NAME) ~/bin/
+install: source root-access install-source
+	if [ $(TYPE) == "lib" ] && ! [ -d "$(INSTALL_PATH)/include/$(NAME)" ]; then \
+	  $(call print,Installing include directory,$(INSTALL_COLOR));\
+	  sudo mkdir $(INSTALL_PATH)/include/ -p;\
+	  sudo cp $(INCLUDE_DIR)/ $(INSTALL_PATH)/include/$(NAME)/ -r;\
+	fi
 
-.PHONY : log
-log:
-	less output.log
+.PHONY : uninstall
+uninstall: root-access uninstall-source
+	if [ $(TYPE) == "lib" ] && [ -d "$(INSTALL_PATH)/include/$(NAME)" ]; then \
+	  $(call print,Uninstalling include directory,$(INSTALL_COLOR));\
+	  sudo rm $(INSTALL_PATH)/include/$(NAME) -rf;\
+	fi
 
-.PHONY : lib
-lib: all
-	@printf "Compiling lib$(NAME).a...\n"
-	ar rcs lib$(NAME).a $(OBJ_LIB)
-	@printf "Copying lib$(NAME).a to /usr/local/lib/...\n"
-	sudo cp lib$(NAME).a /usr/local/lib/ -u
-	@printf "Copying $(NAME).h to /usr/local/include/...\n"
-	sudo cp *.h /usr/local/include/
-	@printf "Copying project headers to /usr/local/include/...\n"
-	sudo find . -name '*.hpp' -exec cp --parents \{\} /usr/local/include/ \;
-	@setterm -fore green
-	@printf "==========>>>>>>>>>>Compiled Installed Lib<<<<<<<<<<==========\n"
-	@setterm -fore white
+.PHONY : help
+help:
+	$(call print_section,Makefile Help)
+	printf "List of all acceptable make targets\n\n"
+	$(call help,all,Builds external, source, and test files and projects)
+	$(call help,clean,Clean files created from external, source, and test)
+	$(call help,help,Display this help page)
+	$(call help,external,Builds external files and projects)
+	$(call help,clean-external,Cleans files created from external)
+	$(call help,source,Builds source files and projects)
+	$(call help,clean-source,Cleans files created from source)
+	$(call help,test,Builds test files and projects)
+	$(call help,clean-test,Cleans files created from test)
 
-.PHONY : doc-html
-doc-html:
-	@printf "Compiling HTML Documentation...\n"
-	@cd docs && $(MAKE) html
+.PHONY : root-access
+root-access:
+	if [[ $$UID != 0 ]]; then \
+	  $(call print,Target requiers root access,$(ERROR_COLOR)); \
+	  exit 1; \
+	fi
 
-.PHONY : doc-latex
-doc-latex:
-	@printf "Compiling Latex/PDF Documentation...\n"
-	@cd docs && $(MAKE) latexpdf
+.PHONY : external
+external:
+	$(call print_section,External Dependencies)
+	if [ -d "$(EXTERNAL_DIR)" ]; then cd "$(EXTERNAL_DIR)" && $(MAKE); fi
+.PHONY : clean-external
+clean-external:
+	$(call print_section,External Dependencies)
+	if [ -d "$(EXTERNAL_DIR)" ]; then cd "$(EXTERNAL_DIR)" && $(MAKE) clean; fi
+
+.PHONY : source
+source:
+	$(call print_section,Source Files)
+	if [ -d "$(SOURCE_DIR)" ]; then cd "$(SOURCE_DIR)" && $(MAKE); fi
+.PHONY : clean-source
+clean-source:
+	$(call print_section,Source Files)
+	if [ -d "$(SOURCE_DIR)" ]; then cd "$(SOURCE_DIR)" && $(MAKE) clean; fi
+.PHONY : install-source
+install-source:
+	$(call print_section,Source Files)
+	if [ -d "$(SOURCE_DIR)" ]; then cd "$(SOURCE_DIR)" && $(MAKE) install; fi
+.PHONY: uninstall-source
+uninstall-source:
+	$(call print_section,Source Files)
+	if [ -d "$(SOURCE_DIR)" ]; then cd "$(SOURCE_DIR)" && $(MAKE) uninstall; fi
+
+.PHONY : test
+test:
+	$(call print_section,Unit Tests)
+	if [ -d "$(TEST_DIR)" ]; then cd "$(TEST_DIR)" && $(MAKE); fi
+.PHONY : clean-test
+clean-test:
+	$(call print_section,Unit Tests)
+	if [ -d "$(TEST_DIR)" ]; then cd "$(TEST_DIR)" && $(MAKE) clean; fi
