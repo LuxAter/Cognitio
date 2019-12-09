@@ -1,12 +1,17 @@
 [
 {
   "directory": "/home/arden/programming/cpp/Cognitio/build",
-  "command": "clang++   -I/home/arden/programming/cpp/Cognitio/src    -std=gnu++17 -o CMakeFiles/cognitio.dir/src/cognitio.cpp.o -c /home/arden/programming/cpp/Cognitio/src/cognitio.cpp",
+  "command": "clang++   -I/home/arden/programming/cpp/Cognitio/src    -std=gnu++11 -o CMakeFiles/cognitio.dir/src/cognitio.cpp.o -c /home/arden/programming/cpp/Cognitio/src/cognitio.cpp",
   "file": "/home/arden/programming/cpp/Cognitio/src/cognitio.cpp"
 },
 {
+  "directory": "/home/arden/programming/cpp/Cognitio/build",
+  "command": "clang++   -I/home/arden/programming/cpp/Cognitio/src    -std=gnu++11 -o CMakeFiles/cognitio.dir/src/logger.cpp.o -c /home/arden/programming/cpp/Cognitio/src/logger.cpp",
+  "file": "/home/arden/programming/cpp/Cognitio/src/logger.cpp"
+},
+{
   "directory": "/home/arden/programming/cpp/Cognitio/build/examples",
-  "command": "clang++   -I/home/arden/programming/cpp/Cognitio/src -I/home/arden/programming/cpp/Cognitio/examples/mnist    -std=gnu++17 -o CMakeFiles/mnist.dir/mnist/main.cpp.o -c /home/arden/programming/cpp/Cognitio/examples/mnist/main.cpp",
+  "command": "clang++   -I/home/arden/programming/cpp/Cognitio/src -I/home/arden/programming/cpp/Cognitio/examples/mnist    -std=gnu++11 -o CMakeFiles/mnist.dir/mnist/main.cpp.o -c /home/arden/programming/cpp/Cognitio/examples/mnist/main.cpp",
   "file": "/home/arden/programming/cpp/Cognitio/examples/mnist/main.cpp"
 }
 ]
